@@ -1,0 +1,17 @@
+# Generated BLAST databases
+Blastdb/
+
+# Generated analysis results
+results/
+
+# Temporary and log files
+*.log
+*.tmp
+*~
+
+# Python cache
+__pycache__/
+*.py[cod]
+
+# Operating system files
+.DS_Store
