@@ -1,37 +1,52 @@
-# Clostridium BLASTN Pipeline
+# การวิเคราะห์ยีน dnaA ของ *Clostridium beijerinckii*
 
-A reproducible Bash workflow for nucleotide sequence similarity searches using NCBI BLAST+.
+เป็นการฝึกใช้เครื่องมือ Bioinformatics เพื่อเปรียบเทียบลำดับ DNA ของยีน `dnaA` ในแบคทีเรีย *Clostridium beijerinckii* จำนวน 4 สายพันธุ์ โดยใช้ข้อมูลลำดับพันธุกรรมจากฐานข้อมูล NCBI
 
-## Project status
+การทำงานเริ่มตั้งแต่การเตรียมไฟล์ FASTA การจัดเรียงลำดับ DNA และการสร้าง phylogenetic tree เพื่อศึกษาความสัมพันธ์ระหว่างลำดับของแต่ละสายพันธุ์
 
-This project is under development. The current query is a 500 bp segment extracted from the reference genome and is used to test the workflow, not to claim a biological discovery.
+## ข้อมูลที่ใช้
 
-## Reference genome
+ใช้ลำดับยีน `dnaA` จาก 4 สายพันธุ์ ได้แก่
 
-- Organism: Clostridium beijerinckii NCIMB 8052
-- NCBI accession: [NC_009617.1](https://www.ncbi.nlm.nih.gov/nuccore/NC_009617.1)
+| สายพันธุ์ | Accession |
+|---|---|
+| NCIMB 8052 | CP000721.1 |
+| ATCC 35702 | NZ_CP006777.1 |
+| NRRL B-598 | NZ_CP011966.3 |
+| NCIMB 14988 | NZ_CP010086.2 |
 
-## Requirements
+แต่ละลำดับมีความยาว 1,350 bp โดยข้อมูลมาจาก genome assemblies ในฐานข้อมูล NCBI
 
-- Linux or WSL
-- NCBI BLAST+ (makeblastdb, blastn, blastdbcmd)
-- Bash
+## ขั้นตอน
+### 1. เตรียมข้อมูลลำดับ DNA
 
-## Usage
+รวบรวมลำดับยีน `dnaA` จากข้อมูลจีโนมของแต่ละสายพันธุ์ และจัดชื่อ sequence ให้ตรงกับชื่อสายพันธุ์และ accession เพื่อให้ง่ายต่อการตรวจสอบและอ่านผลการวิเคราะห์
 
-1. Build the database: `bash scripts/build_db.sh`
-2. Place query FASTA files in `query_seq/`.
-3. Run the search: `bash scripts/run_blast.sh`
-4. Results are written under `results/result_blast_loop/`.
+### 2. จัดเรียงลำดับ DNA ด้วย MAFFT
 
-## Identity thresholds
+ใช้ MAFFT จัดเรียงลำดับ DNA ทั้ง 4 sequences เพื่อให้สามารถเปรียบเทียบตำแหน่งของนิวคลีโอไทด์ระหว่างสายพันธุ์ได้
 
-The pipeline runs BLASTN using minimum percent-identity thresholds of 50, 60, 70, 80, and 90.
+ผลการตรวจสอบพบว่าแต่ละ sequence มีความยาว 1,350 bp และ alignment ที่ได้ไม่มี gap
 
-## Limitations
+### 3. สร้าง Phylogenetic tree ด้วย IQ-TREE
 
-The current database contains one reference genome. The test query comes from that same genome, so a 100% match is expected. This is a technical pipeline test, not a biological discovery.
+ใช้ IQ-TREE สร้างต้นไม้วิวัฒนาการด้วยวิธี Maximum Likelihood โดยให้โปรแกรมเลือกแบบจำลองการแทนที่นิวคลีโอไทด์ที่เหมาะสม และใช้ ultrafast bootstrap จำนวน 1,000 รอบเพื่อประเมินการสนับสนุนของกลุ่มบนต้นไม้
 
-## Reproducibility
+แบบจำลองที่ได้รับเลือกตามค่า BIC คือ HKY+F
 
-Rebuild the database with `scripts/build_db.sh`, then run `scripts/run_blast.sh`.
+## ผลการวิเคราะห์
+
+จากการเปรียบเทียบลำดับ DNA พบว่า *C. beijerinckii* สายพันธุ์ NCIMB 8052 และ ATCC 35702 มีลำดับยีน `dnaA` เหมือนกัน 100% ส่วน NRRL B-598 มีความแตกต่างจาก NCIMB 8052 จำนวน 15 ตำแหน่ง หรือมีความเหมือนกันประมาณ 98.89%
+
+จาก phylogenetic tree พบว่า NRRL B-598 และ NCIMB 14988 อยู่ในกลุ่มเดียวกัน โดยมีค่า ultrafast bootstrap support เท่ากับ 100
+
+อย่างไรก็ตาม การวิเคราะห์นี้ใช้ยีนเพียงตำแหน่งเดียวและมีข้อมูลเพียง 4 sequences ผลที่ได้จึงเหมาะสำหรับการเปรียบเทียบลำดับยีน `dnaA` ชุดนี้ และยังไม่เพียงพอที่จะใช้สรุปความสัมพันธ์ทางวิวัฒนาการของจีโนมทั้งหมด
+
+## เครื่องมือที่ใช้
+
+- **NCBI** — ค้นหาและดาวน์โหลดข้อมูลลำดับพันธุกรรม
+- **FASTA** — จัดเก็บลำดับ DNA สำหรับนำไปวิเคราะห์
+- **MAFFT** — จัดเรียงลำดับ DNA
+- **IQ-TREE** — สร้าง phylogenetic tree และประเมิน bootstrap support
+- **Ubuntu / WSL** — ใช้รันคำสั่งและจัดการไฟล์
+- **Conda** — จัดการ environment สำหรับเครื่องมือ Bioinformatics
